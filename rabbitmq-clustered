@@ -1,0 +1,23 @@
+#!/bin/bash
+
+set -e
+
+hostname=`hostname`
+RABBITMQ_NODENAME=${RABBITMQ_NODENAME:-rabbit}
+
+if [ -z "$CLUSTER_WITH" -o "$CLUSTER_WITH" = "$hostname" ]; then
+  >&2 echo "Environment variable CLUSTER_WITH not set"
+  exit 1
+fi
+
+echo "Running as clustered server"
+/usr/sbin/rabbitmq-server -detached
+rabbitmqctl stop_app
+
+echo "Joining cluster $CLUSTER_WITH"
+rabbitmqctl join_cluster ${ENABLE_RAM:+--ram} $RABBITMQ_NODENAME@$CLUSTER_WITH
+
+rabbitmqctl start_app
+
+# Tail to keep the a foreground process active..
+tail -f /var/log/rabbitmq/*
