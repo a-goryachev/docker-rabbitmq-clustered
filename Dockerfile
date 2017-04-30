@@ -1,4 +1,4 @@
-FROM rabbitmq
+FROM rabbitmq:management
 
 COPY rabbitmq-clustered /usr/local/bin/
 
